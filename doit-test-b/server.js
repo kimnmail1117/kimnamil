@@ -5,10 +5,6 @@ const methodOverride = require('method-override');
 const app = express();
 const PORT = 3466;
 
-app.listen(PORT, () => {
-  console.log(`서버 실행 중: http://localhost:${PORT}`);
-});
-
 app.use(express.urlencoded({ extended: true }));
 // POST /todo/1?_method=PUT → PUT /todo/1 로 처리
 app.use(methodOverride('_method'));
@@ -32,6 +28,27 @@ app.post('/todo', (req, res) => {
   res.redirect('/');
 });
 
-app.listen(PORT, () => {
-  console.log(`http://localhost:${PORT}`);
+// 수정 (PUT)
+app.put('/todo/:id', (req, res) => {
+  const id = Number(req.params.id);
+  const text = (req.body.text || '').trim();
+  const todo = todos.find((t) => t.id === id);
+  if (todo && text) todo.text = text;
+  res.redirect('/');
 });
+
+// 삭제 (DELETE)
+app.delete('/todo/:id', (req, res) => {
+  const id = Number(req.params.id);
+  todos = todos.filter((t) => t.id !== id);
+  res.redirect('/');
+});
+
+// 로컬 실행일 때만 포트를 열고, Vercel 배포를 위해 app도 내보내요
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`서버 실행 중: http://localhost:${PORT}`);
+  });
+}
+
+module.exports = app;
